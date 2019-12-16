@@ -14,37 +14,44 @@ export default class Reader extends Component {
       push: PropTypes.func.isRequired,
     }).isRequired,
     location: PropTypes.objectOf(PropTypes.string).isRequired,
+    step: PropTypes.number,
+  };
+
+  static defaultProps = {
+    step: 1,
   };
 
   getPageNum = () => Number(queryString.parse(this.props.location.search).item);
 
-  handleButtons = event => {
-    const { name } = event.target;
+  handleSteps = e => {
+    const { name } = e.target;
     this.props.history.push({
       ...this.props.location,
       search: `item=${
-        name === 'next' ? this.getPageNum() + 1 : this.getPageNum() - 1
+        name === 'next'
+          ? this.getPageNum() + this.props.step
+          : this.getPageNum() - this.props.step
       }`,
     });
   };
 
   render() {
-    const { items } = this.props;
+    const { items, step } = this.props;
     const pageNumber = this.getPageNum();
     if (!pageNumber || pageNumber > items.length) {
       return <Redirect to="/reader?item=1" />;
     }
-    const disabledPrev = pageNumber <= 1;
+    const disabledPrev = pageNumber <= step;
     const disabledNext = pageNumber >= items.length;
     return (
       <div className={styles.reader}>
         <Controls
-          handleChange={this.handleButtons}
+          handleChange={this.handleSteps}
           disabledPage={disabledPrev}
           disabledPageLast={disabledNext}
         />
         <Counter value={pageNumber} pages={items.length} />
-        <Publication item={items[pageNumber - 1]} />
+        <Publication item={items[pageNumber - step]} />
       </div>
     );
   }
